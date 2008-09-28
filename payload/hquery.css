@@ -1,0 +1,25 @@
+#hquery_display {
+  background: #FFFFFF;
+  border: 10px #EEEEEE solid;
+  padding: 10px;
+  position: absolute;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 16px;
+  text-align: left;
+}
+#hquery_display h2 {
+  color: #a0a0a0;
+}
+#hquery_display div.block { margin: 0px; padding: 0px; }
+#hquery_display .tag { color: #000000; font-weight: bold; }
+#hquery_display .id { color: #880000; }
+#hquery_display .class { color: #558855; }
+#hquery_display .close {
+  text-align: right;
+  margin-bottom: 1em;
+  cursor: pointer;
+  text-decoration: underline;
+}
+#hquery_display .csspath {
+  margin: 1em 0;
+}
