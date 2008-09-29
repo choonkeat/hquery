@@ -1,13 +1,26 @@
 Hquery
-============
+======
 
 Uses pure HTML as "template" for rendering views a Hpricot sequence 
 (in the .hquery counter-part file) is executed to modify the pure HTML
 and the resulting HTML is output to the browser
 
 
-Example
-=======
+Layout
+======
+
+If your controller is "Hello", and your action is "World", then you will need
+
+  app/views/hello
+              |-- world.hquery
+              |-- world.html
+
+"world.html" is the vanila HTML file your designers worked on.
+"world.hquery" contains the ruby code to manipulate data.
+
+
+Example .hquery content
+=======================
 
 # Given you have an array of Hash results, the following code uses
 # Google's results page as-is.
@@ -26,5 +39,8 @@ select "div#ssb p b:last", ["0.00004"] do |ele, seconds|
 end
 
 
+Demo
+=====
+http://www.vimeo.com/1836815
 
 Copyright (c) 2008 Chew Choon Keat, released under the MIT license
