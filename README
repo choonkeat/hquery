@@ -1,13 +1,30 @@
-HpricotQuery
+Hquery
 ============
 
-Introduction goes here.
+Uses pure HTML as "template" for rendering views a Hpricot sequence 
+(in the .hquery counter-part file) is executed to modify the pure HTML
+and the resulting HTML is output to the browser
 
 
 Example
 =======
 
-Example goes here.
+# Given you have an array of Hash results, the following code uses
+# Google's results page as-is.
+
+select "li.g[@style='']", @result_list do |ele, result, index|
+  # each iterated html element, and its matching iterated data
+  ele.html "a.l",         result["title"]
+  ele.html "a.l[@href]",  h(result["url"]) 
+  
+  # or
+  ele.attr "h3 a.l", "href", h(result["url"])
+end
+
+select "div#ssb p b:last", ["0.00004"] do |ele, seconds|
+  ele.html seconds
+end
 
 
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+
+Copyright (c) 2008 Chew Choon Keat, released under the MIT license
