@@ -27,27 +27,15 @@ module Hquery
     end
     protected
       def debug_schema
-        @doc.root.after(<<-HTML
+        (@doc/"head").append(<<-HTML
           <link href="/stylesheets/hquery.css" rel="stylesheet" type="text/css" />
           <script src='/javascripts/hquery-jquery.js'></script>
           <script src='/javascripts/hquery.js'></script>
           HTML
         )
       end
-      def select(selector, list = [{}], &block)
-        selected = (@doc/selector)
-        selected.each_with_index do |ele, index|
-          case list[index] && block.arity
-          when 3
-            block.call ele, list[index], index
-          when 2
-            block.call ele, list[index]
-          when nil
-            ele.parent.children.delete(ele)
-          else
-            block.call ele
-          end
-        end
+      def select(*args, &block)
+        @doc.root.select(*args, &block)
       end
       def logger
         RAILS_DEFAULT_LOGGER
