@@ -1,11 +1,6 @@
 require 'hpricot'
 require 'cgi'
-# 
-# hq(".users_list .user", @users) do |ele, user, index|
-#   (ele/".user_username").html(user.username.capitalize)
-#   (ele/".user_description").html(user.description)
-# end
-# 
+
 module Hquery
   class Handler
     def initialize(view)
@@ -17,10 +12,13 @@ module Hquery
       template_filename = template.filename.gsub(/hquery$/i, 'html')
       @doc = Hpricot(IO.read(template_filename))
       eval(template.source)
-      @doc.to_s
+      value = @doc.to_s
+    ensure
+      logger.debug "hquery::render took #{Time.now - @timestart}s for #{template.filename} "
+      value
     end
     def compilable?
-      false
+      not :yet
     end
     def compile_template(*args)
       logger.debug args.inspect
