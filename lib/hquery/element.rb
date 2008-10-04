@@ -16,6 +16,10 @@ module Hquery
       else
         (self/selector).html(value)
       end
+    rescue
+      err_string = "html(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
+      logger.error err_string
+      raise $!
     end
 
     def attr(selector, key, value = :attr_without_selector)
@@ -24,30 +28,38 @@ module Hquery
       else
         (self/selector).collect {|e| e.set_attribute(key, value) }
       end
+    rescue
+      err_string = "attr(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
+      logger.error err_string
+      raise $!
     end
-  
+
     def select(selector, list = [{}], &block)
       timestart = Time.now
       (self/selector).each_with_index do |ele, index|
-        obj = list[index]
-        case obj && block.arity
+        obj = list && list[index]
+        case obj && block && block.arity
+        when nil
+          ele.parent.children.delete(ele)
         when 3
           block.call ele, obj, index
         when 2
           block.call ele, obj
-        when nil
-          ele.parent.children.delete(ele)
         else
           block.call ele
         end
       end
     rescue
-      err_string = "#{$!.inspect}\n#{$!.backtrace.join("\n")}"
-      RAILS_DEFAULT_LOGGER.error err_string
-      (self/selector).html(RAILS_ENV == 'production' ? "" : CGI.escapeHTML(err_string))
-      raise $!
+      err_string = "select(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
+      logger.error err_string
+      (self/selector).html(RAILS_ENV == 'production' ? "" : "<pre>#{CGI.escapeHTML(err_string)}</pre>")
     ensure
-      RAILS_DEFAULT_LOGGER.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
+      logger.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
     end
+
+    protected
+      def logger
+        RAILS_DEFAULT_LOGGER
+      end
   end
 end
