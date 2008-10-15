@@ -18,10 +18,13 @@ module Hquery
       value
     end
     def compilable?
-      not :yet
+       ENV['HQUERY_COMPILE'] || RAILS_ENV == 'production'
     end
-    def compile_template(*args)
-      logger.debug args.inspect
+    def compile_template(template)
+      template_filename = template.filename.gsub(/hquery$/i, 'html')
+      compiled_filename = template.filename.gsub(/hquery$/i, 'html.erb')
+      @doc = Hpricot(IO.read(template_filename))
+      Compiler.new(@doc).compile(template.source, compiled_filename)
     end
     protected
       def debug_schema
