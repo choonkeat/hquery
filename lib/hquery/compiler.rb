@@ -39,6 +39,26 @@ module Hquery
           raise "compile: cannot interpret: \n#{code}"
         end
       end
+
+      interpreted_src.scan(/^remove.*$/).each do |code|
+        logger.debug "interpreting: #{code.inspect}"
+        case code
+        when /^remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
+          (selector, condition, clause, bool) = [$1, $2, $3, $4]
+          clause = (clause == 'if' ? 'unless' : 'if')
+          placeholder = "hquery#{Time.now.to_f}"
+          (@doc/selector).wrap("<#{placeholder}></#{placeholder}>")
+          @doc = Hpricot(@doc.to_html.gsub("/#{placeholder}", '% end %').gsub(placeholder, "% #{clause} #{bool} %"))
+        when /^remove \"([^\"]+)\"\s*/
+          selector = $1
+          logger.debug "removing #{selector} unconditionally"
+          sleep 3
+          (@doc/selector).remove
+        else
+          raise "compile: cannot interpret: \n#{code}"
+        end
+      end
+
       File.open(compiled_filename, "w") do |f|
         f.write @doc.to_s
         # asking the generated template to delete itself is 
@@ -81,7 +101,7 @@ module Hquery
           logger.info "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
-      when /^\s*\#/, /^\s*$/
+      when /^\s*\#/, /^\s*$/, /^\s*debug_schema\s*$/
         logger.debug "ignoring comment: #{line}"
       else
         raise "parse: cannot understand #{line} with #{[selector, ele, list, item].inspect}"        

@@ -38,6 +38,9 @@ module Hquery
       def select(*args, &block)
         @doc.root.select(*args, &block)
       end
+      def remove(selector)
+        (@doc/selector).remove
+      end
       def logger
         RAILS_DEFAULT_LOGGER
       end
