@@ -35,6 +35,7 @@ module Hquery
     def select(selector, list = [{}], &block)
       timestart = Time.now
       selected = (self/selector)
+      return if selected.length < 1
       [selected.length, list.length].max.times do |index|
         obj = list[index]
         ele = selected[index] || selected.last.after(selected.first.to_s).first
