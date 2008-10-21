@@ -22,11 +22,13 @@ module Hquery
     end
 
     def compilable?
-      not :yet
+       ENV['HQUERY_COMPILE'] || RAILS_ENV == 'production'
     end
-
-    def compile_template(*args)
-      logger.debug args.inspect
+    def compile_template(template)
+      template_filename = template.filename.gsub(/hquery$/i, 'html')
+      compiled_filename = template.filename.gsub(/hquery$/i, 'html.erb')
+      @doc = Hpricot(IO.read(template_filename))
+      Compiler.new(@doc).compile(template.source, compiled_filename)
     end
 
     protected
@@ -49,6 +51,10 @@ module Hquery
 
       def select(*args, &block)
         @doc.root.select(*args, &block)
+      end
+
+      def remove(selector)
+        (@doc/selector).remove
       end
 
       # replaces parts of current DOM with content from another file

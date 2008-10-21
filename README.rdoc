@@ -38,16 +38,48 @@ Can render this html template:
     <!-- repeat your li.vcard here as many times u need printed -->
   </ol>
 
-== Example 2 .hquery content
+== Example 2 Google example
 
 Given an array of Hash results, the following hquery declaration uses Google's results page HTML as-is
 
-  select "li.g[@style='']", @result_list do |ele, result, index|
+  select "li.g[@style='']", @result_list do |ele, result|
     # each iterated html element, and its matching iterated data
-    ele.html "a.l",         result["title"]
-    ele.html "a.l[@href]",  h(result["url"]) 
+    ele.html "a.l",         result['title']
+    ele.html "a.l[@href]",  h(result['url']) 
   end
+
+== Example 3 Compiling conditionally removed elements
+
+This hquery declaration:
+  remove ".nav.superuser" unless current_user && current_user.superuser?
+
+Compiled with this html template:
+  <ul class="main_nav">
+    <li class="nav"><a href="/">Home</a></li>
+    <li class="nav superuser"><a href="/admin">Admin</a></li>
+    <li class="nav"><a href="/logout">Logout</a></li>
+  </ul>
+
+Gives you this html.erb file:
+  <ul class="main_nav">
+    <li class="nav"><a href="/">Home</a></li>
+    <% if current_user && current_user.superuser? %><li class="nav superuser"><a href="/admin">Admin</a></li><% end %>
+    <li class="nav"><a href="/logout">Logout</a></li>
+  </ul>
+
+== Compilation
+
+When running in production mode (or with environment variable HQUERY_COMPILE set) the .hquery template
+will compile itself to an equivalent .html.erb file so the subsequent request onward will be served
+through the faster .html.erb template.
+
+The compiler is Regexp based (see the examples above for syntax reference) and fragile. e.g. you can't
+use double-quote " in the last argument to "ele.attr" because of the way Hpricot spits out attribute
+and we can't tell Hpricot that <a id="<%= result["title"] %>"> is really ok.
+
+But when the compiler does work, it really works.
 
 == License
 
 Copyright (c) 2008 Chew Choon Keat, released under the MIT license
+

@@ -10,9 +10,9 @@ module Hquery
       return self.html_without_selector(selector) if value == :html_without_selector
       case !noattr && selector
       when /^\@(.+)$/
-        self.set_attribute $1, value
+        self.raw_attr $1, value
       when /.*\[\@([^\]]+)\]/
-        (self/selector).each {|e| e.set_attribute($1, value) }
+        (self/selector).each {|e| e.raw_attr($1, value) }
       else
         (self/selector).html(value)
       end
@@ -24,9 +24,9 @@ module Hquery
 
     def attr(selector, key, value = :attr_without_selector)
       if value == :attr_without_selector
-        self.set_attribute(selector, key)
+        self.raw_attr(selector, key)
       else
-        (self/selector).collect {|e| e.set_attribute(key, value) }
+        (self/selector).collect {|e| e.raw_attr(key, value) }
       end
     rescue
       err_string = "attr(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
@@ -34,13 +34,20 @@ module Hquery
       raise $!
     end
 
+    def raw_attr(name, val)
+      self.altered!
+      self.raw_attributes ||= {}
+      self.raw_attributes[name.to_s] = val
+    end
+  
     def select(selector, list = [{}], &block)
       timestart = Time.now
-      (self/selector).each_with_index do |ele, index|
-        obj = list && list[index]
-        case obj && block && block.arity
-        when nil
-          ele.parent.children.delete(ele)
+      selected = (self/selector)
+      return if selected.length < 1
+      [selected.length, list.length].max.times do |index|
+        obj = list[index]
+        ele = selected[index] || selected.last.after(selected.first.to_s).first
+        case obj && block.arity
         when 3
           block.call ele, obj, index
         when 2
