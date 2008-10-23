@@ -71,34 +71,34 @@ module Hquery
       case line
       when /^\s*#{ele}\.html \"([^\"]+\[@(\w+)\])\", (.+)/, /^\s*#{ele}\.attr \"([^\"]+)\", \"([^\"]+)\", (.+)/
         (subselector, attribute, code) = [$1, $2, $3]
-        logger.info "parsing: '#{selector} #{subselector}'"
+        logger.debug "parsing: '#{selector} #{subselector}'"
         selected = (@doc/"#{selector} #{subselector}")
         selected.each do |html|
-          logger.info "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
+          # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
       when /^\s*#{ele}\.html \"([^\"]+)\", (.+)/
         (subselector, code) = [$1, $2]
-        logger.info "parsing: '#{selector} #{subselector}'"
+        logger.debug "parsing: '#{selector} #{subselector}'"
         selected = (@doc/"#{selector} #{subselector}")
         selected.each do |html|
-          logger.info "set element #{html.name}=<%= #{code} %>"
+          # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
         end
       when /^\s*#{ele}\.html (.+)/
         code = $1
-        logger.info "parsing: '#{selector}'"
+        logger.debug "parsing: '#{selector}'"
         selected = (@doc/"#{selector}")
         selected.each do |html|
-          logger.info "set element #{html.name}=<%= #{code} %>"
+          # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
         end
       when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)/
         (attribute, code) = [$1, $2]
-        logger.info "parsing: '#{selector}'"
+        logger.debug "parsing: '#{selector}'"
         selected = (@doc/"#{selector}")
         selected.each do |html|
-          logger.info "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
+          # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
       when /^\s*\#/, /^\s*$/, /^\s*debug_schema\s*$/

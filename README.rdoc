@@ -17,7 +17,7 @@ If your controller is "Hello", and your action is "World", then you will need
 "world.html" is the vanila HTML file your designers worked on.
 "world.hquery" contains the ruby code to manipulate data.
 
-== Example 1
+=== Example 1
 
 This hquery declaration:
   select ".users .vcard", User.find(:all) do |ele, user|
@@ -38,7 +38,7 @@ Can render this html template:
     <!-- repeat your li.vcard here as many times u need printed -->
   </ol>
 
-== Example 2 Google example
+=== Example 2 Google example
 
 Given an array of Hash results, the following hquery declaration uses Google's results page HTML as-is
 
@@ -48,7 +48,7 @@ Given an array of Hash results, the following hquery declaration uses Google's r
     ele.html "a.l[@href]",  h(result['url']) 
   end
 
-== Example 3 Compiling conditionally removed elements
+=== Example 3 Compiling conditionally removed elements
 
 This hquery declaration:
   remove ".nav.superuser" unless current_user && current_user.superuser?
@@ -67,7 +67,7 @@ Gives you this html.erb file:
     <li class="nav"><a href="/logout">Logout</a></li>
   </ul>
 
-== Compilation
+== Compile
 
 When running in production mode (or with environment variable HQUERY_COMPILE set) the .hquery template
 will compile itself to an equivalent .html.erb file so the subsequent request onward will be served
@@ -78,6 +78,17 @@ use double-quote " in the last argument to "ele.attr" because of the way Hpricot
 and we can't tell Hpricot that <a id="<%= result["title"] %>"> is really ok.
 
 But when the compiler does work, it really works.
+
+=== Offline compile
+
+If the "compile on first request" behavior brings you bad JSP memories, you can run a Rake command to trigger a compile
+anytime e.g. in your deployment steps:
+  $ rake hquery
+  Compiling app/views/search/google.hquery -> app/views/search/google.html.erb ...
+
+Running it too many times won't hurt either
+  $ rake hquery
+  Skipping app/views/search/google.hquery (app/views/search/google.html.erb is newer)
 
 == License
 

@@ -1,2 +1,3 @@
-ActionView::Template.register_template_handler :hquery, Hquery::Handler
-Hpricot::Elem.send(:include, Hquery::Element)
+require 'hquery/element'
+require 'hquery/handler'
+require 'hquery/compiler'

@@ -73,3 +73,5 @@ module Hquery
     STRING = [MAJOR, MINOR, TINY].join('.')
   end
 end
+
+ActionView::Template.register_template_handler :hquery, Hquery::Handler
