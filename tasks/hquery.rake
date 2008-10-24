@@ -13,16 +13,5 @@ task :hquery do
       @logger
     end
   end
-  Dir["app/views/*/*.hquery"].each do |hquery_filename|
-    template_filename = hquery_filename.gsub(/hquery$/i, 'html')
-    compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
-    if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || ENV['HQUERY_COMPILE']
-      puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
-      hquery_source = IO.read(hquery_filename)
-      doc = Hpricot(IO.read(template_filename))
-      Hquery::Compiler.new(doc).compile(hquery_source, compiled_filename)
-    else
-      puts "Skipping #{hquery_filename} (#{compiled_filename} is newer)"
-    end
-  end
+  Hquery::Compiler.compile('.')
 end

@@ -1,5 +1,5 @@
+require 'rubygems'
 require 'hpricot'
-require 'cgi'
 
 #
 # Regular-expression based compiler for HQUERY source
@@ -66,7 +66,7 @@ module Hquery
         f.write "<% File.delete(#{compiled_filename.inspect}) %>" if ENV['HQUERY_DEBUG_COMPILE']
       end
     end
-    
+
     def parse(line, selector, ele, list, item)
       case line
       when /^\s*#{ele}\.html \"([^\"]+\[@(\w+)\])\", (.+)/, /^\s*#{ele}\.attr \"([^\"]+)\", \"([^\"]+)\", (.+)/
@@ -107,5 +107,38 @@ module Hquery
         raise "parse: cannot understand #{line} with #{[selector, ele, list, item].inspect}"        
       end
     end
+
+    class << self
+      def compile(railsroot)
+        Dir[File.join(railsroot, "app/views/*/*.hquery")].each do |hquery_filename|
+          template_filename = hquery_filename.gsub(/hquery$/i, 'html')
+          compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
+          if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || ENV['HQUERY_COMPILE']
+            puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
+            hquery_source = IO.read(hquery_filename)
+            doc = Hpricot(IO.read(template_filename))
+            Hquery::Compiler.new(doc).compile(hquery_source, compiled_filename)
+          else
+            puts "Skipping #{hquery_filename} (#{compiled_filename} is newer)"
+          end
+        end
+      end
+    end
   end
+end
+
+if __FILE__ == $0
+  require 'logger'
+  require 'activesupport'
+  require File.join(File.dirname(__FILE__), 'element')
+  Hquery::Compiler.class_eval do
+    def logger
+      unless @logger
+        @logger = Logger.new(STDOUT)
+        @logger.level = Logger::INFO
+      end
+      @logger
+    end
+  end
+  Hquery::Compiler.compile(*ARGV)
 end
