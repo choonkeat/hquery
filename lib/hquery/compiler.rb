@@ -29,10 +29,13 @@ module Hquery
         when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*(\w+)\s*\|/
           (selector, list, ele, item) = [$1, $2, $4, $5]
           logger.debug "selector #{selector} (#{ele}), list #{list} (#{item})"
-          li = (@doc/selector).first
-          ul = (@doc/selector).first.parent
-          lines.collect {|line| parse(line, selector, ele, list, item) }
-          ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
+          if li = (@doc/selector).first
+            ul = (@doc/selector).first.parent
+            lines.collect {|line| parse(line, selector, ele, list, item) }
+            ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
+          else
+            logger.error "compile: #{selector.inspect} does not exist!"
+          end
         when /^\s*\#/, /^\s*$/
           logger.debug "ignoring comment: #{code}"
         else
