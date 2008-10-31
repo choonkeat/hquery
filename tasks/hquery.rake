@@ -1,9 +1,5 @@
-require 'rubygems'
-require File.join(File.dirname(__FILE__), '../lib/hquery/element')
-require File.join(File.dirname(__FILE__), '../lib/hquery/compiler')
-
 desc "Seeks out .hquery files and generate .html.erb equivalents"
-task :hquery do
+task :hquery => :environment do
   Hquery::Compiler.class_eval do
     def logger
       unless @logger

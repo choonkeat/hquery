@@ -131,9 +131,6 @@ module Hquery
 end
 
 if __FILE__ == $0
-  require 'logger'
-  require 'activesupport'
-  require File.join(File.dirname(__FILE__), 'element')
   Hquery::Compiler.class_eval do
     def logger
       unless @logger
