@@ -1,5 +1,5 @@
+require 'rubygems'
 require 'hpricot'
-require 'cgi'
 
 #
 # Regular-expression based compiler for HQUERY source
@@ -29,10 +29,13 @@ module Hquery
         when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*(\w+)\s*\|/
           (selector, list, ele, item) = [$1, $2, $4, $5]
           logger.debug "selector #{selector} (#{ele}), list #{list} (#{item})"
-          li = (@doc/selector).first
-          ul = (@doc/selector).first.parent
-          lines.collect {|line| parse(line, selector, ele, list, item) }
-          ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
+          if li = (@doc/selector).first
+            ul = (@doc/selector).first.parent
+            lines.collect {|line| parse(line, selector, ele, list, item) }
+            ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
+          else
+            logger.error "compile: #{selector.inspect} does not exist!"
+          end
         when /^\s*\#/, /^\s*$/
           logger.debug "ignoring comment: #{code}"
         else
@@ -66,39 +69,39 @@ module Hquery
         f.write "<% File.delete(#{compiled_filename.inspect}) %>" if ENV['HQUERY_DEBUG_COMPILE']
       end
     end
-    
+
     def parse(line, selector, ele, list, item)
       case line
       when /^\s*#{ele}\.html \"([^\"]+\[@(\w+)\])\", (.+)/, /^\s*#{ele}\.attr \"([^\"]+)\", \"([^\"]+)\", (.+)/
         (subselector, attribute, code) = [$1, $2, $3]
-        logger.info "parsing: '#{selector} #{subselector}'"
+        logger.debug "parsing: '#{selector} #{subselector}'"
         selected = (@doc/"#{selector} #{subselector}")
         selected.each do |html|
-          logger.info "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
+          # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
       when /^\s*#{ele}\.html \"([^\"]+)\", (.+)/
         (subselector, code) = [$1, $2]
-        logger.info "parsing: '#{selector} #{subselector}'"
+        logger.debug "parsing: '#{selector} #{subselector}'"
         selected = (@doc/"#{selector} #{subselector}")
         selected.each do |html|
-          logger.info "set element #{html.name}=<%= #{code} %>"
+          # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
         end
       when /^\s*#{ele}\.html (.+)/
         code = $1
-        logger.info "parsing: '#{selector}'"
+        logger.debug "parsing: '#{selector}'"
         selected = (@doc/"#{selector}")
         selected.each do |html|
-          logger.info "set element #{html.name}=<%= #{code} %>"
+          # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
         end
       when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)/
         (attribute, code) = [$1, $2]
-        logger.info "parsing: '#{selector}'"
+        logger.debug "parsing: '#{selector}'"
         selected = (@doc/"#{selector}")
         selected.each do |html|
-          logger.info "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
+          # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
       when /^\s*\#/, /^\s*$/, /^\s*debug_schema\s*$/
@@ -107,5 +110,35 @@ module Hquery
         raise "parse: cannot understand #{line} with #{[selector, ele, list, item].inspect}"        
       end
     end
+
+    class << self
+      def compile(railsroot)
+        Dir[File.join(railsroot, "app/views/*/*.hquery")].each do |hquery_filename|
+          template_filename = hquery_filename.gsub(/hquery$/i, 'html')
+          compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
+          if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || ENV['HQUERY_COMPILE']
+            puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
+            hquery_source = IO.read(hquery_filename)
+            doc = Hpricot(IO.read(template_filename))
+            Hquery::Compiler.new(doc).compile(hquery_source, compiled_filename)
+          else
+            puts "Skipping #{hquery_filename} (#{compiled_filename} is newer)"
+          end
+        end
+      end
+    end
   end
+end
+
+if __FILE__ == $0
+  Hquery::Compiler.class_eval do
+    def logger
+      unless @logger
+        @logger = Logger.new(STDOUT)
+        @logger.level = Logger::INFO
+      end
+      @logger
+    end
+  end
+  Hquery::Compiler.compile(*ARGV)
 end

@@ -1,3 +1,5 @@
+require 'hpricot'
+
 module Hquery
   module Element
     def self.included(base)
@@ -70,3 +72,5 @@ module Hquery
       end
   end
 end
+
+Hpricot::Elem.send(:include, Hquery::Element)
