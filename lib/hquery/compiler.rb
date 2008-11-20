@@ -75,7 +75,8 @@ module Hquery
       when /^\s*#{ele}\.html \"([^\"]+\[@(\w+)\])\", (.+)/, /^\s*#{ele}\.attr \"([^\"]+)\", \"([^\"]+)\", (.+)/
         (subselector, attribute, code) = [$1, $2, $3]
         logger.debug "parsing: '#{selector} #{subselector}'"
-        selected = (@doc/"#{selector} #{subselector}")
+        selected = (@doc/"#{selector} #{subselector}").compact
+        logger.error "compile: #{selector.inspect} > #{subselector.inspect} does not exist!" unless selected.length > 0
         selected.each do |html|
           # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
@@ -83,7 +84,8 @@ module Hquery
       when /^\s*#{ele}\.html \"([^\"]+)\", (.+)/
         (subselector, code) = [$1, $2]
         logger.debug "parsing: '#{selector} #{subselector}'"
-        selected = (@doc/"#{selector} #{subselector}")
+        selected = (@doc/"#{selector} #{subselector}").compact
+        logger.error "compile: #{selector.inspect} > #{subselector.inspect} does not exist!" unless selected.length > 0
         selected.each do |html|
           # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
@@ -91,7 +93,8 @@ module Hquery
       when /^\s*#{ele}\.html (.+)/
         code = $1
         logger.debug "parsing: '#{selector}'"
-        selected = (@doc/"#{selector}")
+        selected = (@doc/"#{selector}").compact
+        logger.error "compile: #{selector.inspect} does not exist!" unless selected.length > 0
         selected.each do |html|
           # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
@@ -99,7 +102,8 @@ module Hquery
       when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)/
         (attribute, code) = [$1, $2]
         logger.debug "parsing: '#{selector}'"
-        selected = (@doc/"#{selector}")
+        selected = (@doc/"#{selector}").compact
+        logger.error "compile: #{selector.inspect} does not exist!" unless selected.length > 0
         selected.each do |html|
           # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
