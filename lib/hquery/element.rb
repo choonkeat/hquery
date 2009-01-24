@@ -18,10 +18,6 @@ module Hquery
       else
         (self/selector).html(value)
       end
-    rescue
-      err_string = "html(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
-      logger.error err_string
-      raise $!
     end
 
     def attr(selector, key, value = :attr_without_selector)
@@ -30,10 +26,6 @@ module Hquery
       else
         (self/selector).collect {|e| e.raw_attr(key, value) }
       end
-    rescue
-      err_string = "attr(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
-      logger.error err_string
-      raise $!
     end
 
     def raw_attr(name, val)
@@ -41,11 +33,16 @@ module Hquery
       self.raw_attributes ||= {}
       self.raw_attributes[name.to_s] = val
     end
-  
+
+    def remove(selector)
+      (self/selector).remove
+    end
+
     def select(selector, list = [{}], &block)
       timestart = Time.now
       selected = (self/selector)
       return if selected.length < 1
+      last_ele = nil
       [selected.length, list.length].max.times do |index|
         obj = list[index]
         ele = selected[index] || (last_ele = (last_ele || selected.last).after(selected.first.to_s).first)
@@ -54,22 +51,20 @@ module Hquery
           block.call ele, obj, index
         when 2
           block.call ele, obj
+        when nil
+          ele.parent.children.delete(ele)
         else
           block.call ele
         end
       end
     rescue
-      err_string = "select(#{selector}) - #{$!.inspect}\n#{$!.backtrace.join("\n")}"
-      logger.error err_string
-      (self/selector).html(RAILS_ENV == 'production' ? "" : "<pre>#{CGI.escapeHTML(err_string)}</pre>")
+      err_string = "#{$!.inspect}\n#{$!.backtrace.join("\n")}"
+      RAILS_DEFAULT_LOGGER.error err_string
+      (self/selector).html(RAILS_ENV == 'production' ? "" : CGI.escapeHTML(err_string))
+      raise $!
     ensure
-      logger.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
+      RAILS_DEFAULT_LOGGER.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
     end
-
-    protected
-      def logger
-        RAILS_DEFAULT_LOGGER
-      end
   end
 end
 

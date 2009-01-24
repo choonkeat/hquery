@@ -8,6 +8,7 @@ module Hquery
   class Compiler
     def initialize(doc)
       @doc = doc
+      @rhash = {}
     end
 
     def logger
@@ -36,6 +37,16 @@ module Hquery
           else
             logger.error "compile: #{selector.inspect} does not exist!"
           end
+        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*(\w+)\s*,\s*(\w+)\s*\|/
+          (selector, list, ele, item, index) = [$1, $2, $4, $5, $6]
+          logger.debug "selector #{selector} (#{ele}), list #{list} (#{item}, #{index})"
+          if li = (@doc/selector).first
+            ul = (@doc/selector).first.parent
+            lines.collect {|line| parse(line, selector, ele, list, item) }
+            ul.html "<% (#{list}).each_with_index do |#{item}, #{index}| %>\n#{li}\n<% end %>"
+          else
+            logger.error "compile: #{selector.inspect} does not exist!"
+          end
         when /^\s*\#/, /^\s*$/
           logger.debug "ignoring comment: #{code}"
         else
@@ -49,21 +60,25 @@ module Hquery
         when /^remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
           (selector, condition, clause, bool) = [$1, $2, $3, $4]
           clause = (clause == 'if' ? 'unless' : 'if')
-          placeholder = "hquery#{Time.now.to_f}"
-          (@doc/selector).wrap("<#{placeholder}></#{placeholder}>")
-          @doc = Hpricot(@doc.to_html.gsub("/#{placeholder}", '% end %').gsub(placeholder, "% #{clause} #{bool} %"))
+          tagname = unique_placeholder_tagname
+          (@doc/selector).wrap("<#{tagname}></#{tagname}>")
+          @rhash[tagname] = "#{clause} #{bool}"
         when /^remove \"([^\"]+)\"\s*/
           selector = $1
           logger.debug "removing #{selector} unconditionally"
-          sleep 3
           (@doc/selector).remove
         else
           raise "compile: cannot interpret: \n#{code}"
         end
       end
 
+      html_string = @doc.to_html
+      @rhash.keys.each do |tagname|
+        html_string = html_string.gsub("/#{tagname}", '% end %').gsub(tagname, "% #{@rhash[tagname]} %")
+      end
+
       File.open(compiled_filename, "w") do |f|
-        f.write @doc.to_s
+        f.write html_string
         # asking the generated template to delete itself is 
         # only useful for developing & testing this compiler
         f.write "<% File.delete(#{compiled_filename.inspect}) %>" if ENV['HQUERY_DEBUG_COMPILE']
@@ -108,11 +123,28 @@ module Hquery
           # logger.debug "set attribute #{html.name}.#{attribute}=<%= #{code} %>"
           html.raw_attr(attribute, "<%= #{code} %>")
         end
+
+      when /^\s*#{ele}\.remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
+        (subselector, condition, clause, bool) = [$1, $2, $3, $4]
+        clause = (clause == 'if' ? 'unless' : 'if')
+        tagname = unique_placeholder_tagname
+        (@doc/"#{selector} #{subselector}").wrap("<#{tagname}></#{tagname}>")
+        @rhash[tagname] = "#{clause} #{bool}"
+      when /^\s*#{ele}\.remove \"([^\"]+)\"\s*/
+        subselector = $1
+        logger.debug "removing \"#{selector} #{subselector}\" unconditionally"
+        (@doc/"#{selector} #{subselector}").remove
+
       when /^\s*\#/, /^\s*$/, /^\s*debug_schema\s*$/
         logger.debug "ignoring comment: #{line}"
       else
         raise "parse: cannot understand #{line} with #{[selector, ele, list, item].inspect}"        
       end
+    end
+
+    def unique_placeholder_tagname
+      tagname = "hquery#{Time.now.to_f}#{rand(1000)}"
+      @rhash[tagname] ? unique_placeholder_tagname : tagname
     end
 
     class << self
