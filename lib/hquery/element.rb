@@ -48,7 +48,7 @@ module Hquery
       return if selected.length < 1
       [selected.length, list.length].max.times do |index|
         obj = list[index]
-        ele = selected[index] || selected.last.after(selected.first.to_s).first
+        ele = selected[index] || (last_ele = (last_ele || selected.last).after(selected.first.to_s).first)
         case obj && block.arity
         when 3
           block.call ele, obj, index
