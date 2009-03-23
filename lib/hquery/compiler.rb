@@ -6,6 +6,8 @@ require 'hpricot'
 #
 module Hquery
   class Compiler
+    include ::Hquery::Helper
+
     def initialize(doc)
       @doc = doc
       @rhash = {}
