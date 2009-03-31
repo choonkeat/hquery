@@ -22,7 +22,7 @@ module Hquery
       # if it exists, we simply eval the code for precompile
       eval(precompile_src) if precompile_src
       # then we move on to interpret each "select ... do end" segment
-      interpreted_src.scan(/^select .*?^end$/m).each do |code|
+      interpreted_src.to_s.scan(/^select .*?^end$/m).each do |code|
         lines = code.split(/[\r\n]+/)
         case lines.pop && lines.shift
         when /^select \"([^\"]+)\"\s*(do|\{)\s*\|\s*(\w+)\s*\|/
@@ -56,7 +56,7 @@ module Hquery
         end
       end
 
-      interpreted_src.scan(/^remove.*$/).each do |code|
+      interpreted_src.to_s.scan(/^remove.*$/).each do |code|
         logger.debug "interpreting: #{code.inspect}"
         case code
         when /^remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
