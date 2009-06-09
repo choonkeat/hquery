@@ -51,10 +51,12 @@ module Hquery
           block.call ele, obj, index
         when 2
           block.call ele, obj
-        when nil
-          ele.parent.children.delete(ele)
         else
-          block.call ele
+          if block.arity == 1
+            block.call ele
+          else
+            ele.parent.children.delete(ele)
+          end
         end
       end
     rescue
