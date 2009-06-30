@@ -3,8 +3,6 @@ require 'cgi'
 
 module Hquery
   class Handler
-    include ::Hquery::Helper
-
     def initialize(view)
       @timestart = Time.now
       @view = view

@@ -6,8 +6,6 @@ require 'hpricot'
 #
 module Hquery
   class Compiler
-    include ::Hquery::Helper
-
     def initialize(doc)
       @doc = doc
       @rhash = {}
@@ -25,21 +23,7 @@ module Hquery
       interpreted_src.to_s.scan(/^select .*?^end$/m).each do |code|
         lines = code.split(/[\r\n]+/)
         case lines.pop && lines.shift
-        when /^select \"([^\"]+)\"\s*(do|\{)\s*\|\s*(\w+)\s*\|/
-          (selector, ele) = [$1, $3]
-          logger.debug "selector #{selector} (#{ele})"
-          lines.each {|line| parse(line, selector, ele, nil, nil) }
-        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*(\w+)\s*\|/
-          (selector, list, ele, item) = [$1, $2, $4, $5]
-          logger.debug "selector #{selector} (#{ele}), list #{list} (#{item})"
-          if li = (@doc/selector).first
-            ul = (@doc/selector).first.parent
-            lines.collect {|line| parse(line, selector, ele, list, item) }
-            ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
-          else
-            logger.error "compile: #{selector.inspect} does not exist!"
-          end
-        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*(\w+)\s*,\s*(\w+)\s*\|/
+        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*,\s*(\w+)\s*\|/
           (selector, list, ele, item, index) = [$1, $2, $4, $5, $6]
           logger.debug "selector #{selector} (#{ele}), list #{list} (#{item}, #{index})"
           if li = (@doc/selector).first
@@ -49,6 +33,20 @@ module Hquery
           else
             logger.error "compile: #{selector.inspect} does not exist!"
           end
+        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*\|/
+          (selector, list, ele, item) = [$1, $2, $4, $5]
+          logger.debug "selector #{selector} (#{ele}), list #{list} (#{item})"
+          if li = (@doc/selector).first
+            ul = (@doc/selector).first.parent
+            lines.collect {|line| parse(line, selector, ele, list, item) }
+            ul.html "<% (#{list}).each do |#{item}| %>\n#{li}\n<% end %>"
+          else
+            logger.error "compile: #{selector.inspect} does not exist!"
+          end
+        when /^select \"([^\"]+)\"\s*(do|\{)\s*\|\s*(\w+)\s*\|/
+          (selector, ele) = [$1, $3]
+          logger.debug "selector #{selector} (#{ele})"
+          lines.each {|line| parse(line, selector, ele, nil, nil) }
         when /^\s*\#/, /^\s*$/
           logger.debug "ignoring comment: #{code}"
         else
