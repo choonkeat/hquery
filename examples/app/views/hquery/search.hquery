@@ -1,0 +1,15 @@
+select "li.g", @results do |ele, row|
+  ele.html "h3 a.l", row[:title]
+  ele.html "h3 a.l[@href]", row[:clickurl]
+  ele.html "div.s", row[:abstract] + "<cite>#{row[:cite]}</cite>"
+end
+
+select "head" do |ele|
+  ele.html "title", params[:q]
+end
+
+select "body" do |ele|
+  ele.attr "form#tsf", "action", ""
+  ele.attr "input[@type='text']", "value", params[:q]
+  ele.html "div#ssb p b:nth-last-child(1)", params[:q]
+end

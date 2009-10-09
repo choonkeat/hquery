@@ -67,6 +67,10 @@ Gives you this html.erb file:
     <li class="nav"><a href="/logout">Logout</a></li>
   </ul>
 
+=== More examples
+
+See +examples+ directory
+
 == Compile
 
 When running in production mode (or with environment variable HQUERY_COMPILE set) the .hquery template

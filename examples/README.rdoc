@@ -1,0 +1,39 @@
+= How to try these examples
+
+== Setup Rails
+1. Generate a bare bones Rails app, e.g. <tt>rails hquerytest</tt>
+1. Install hquery plugin, e.g. <tt>./script/plugin install git://github.com/choonkeat/hquery.git</tt> 
+1. Place the files in this +examples+ directory into your Rails app, preserving the directory structure (see diagram below)
+1. Start your Rails server, e.g. <tt>ruby script/server</tt>
+
+  .
+  |-- app
+  |   |-- controllers
+  |   |   `-- hquery_controller.rb
+  |   `-- views
+  |       `-- hquery
+  |           |-- index.html.erb
+  |           |-- search.hquery
+  |           |-- search.hquery.html
+  |           |-- twitter.hquery
+  |           `-- twitter.hquery.html
+  `-- public
+      `-- hquery
+
+
+  
+== To try the twitter example
+1. Go to http://twitter.com/wycats
+1. On Firefox, click <tt>File > Save Page As > twitter.html</tt>
+1. Move the generated +twitter_files+ directory into <tt>public/hquery</tt>
+1. Optionally, move the generated <tt>twitter.html</tt> into <tt>app/views/hquery/twitter.hquery.html</tt>
+1. Go to http://localhost:3000/hquery and click on the +Twitter+ links
+
+== To try the search example (Yahoo search results in Google skin)
+1. Go to http://www.google.com/search?q=hquery
+1. On Firefox, click <tt>File > Save Page As > google.html</tt>
+1. Move the generated +google_files+ directory into <tt>public/hquery</tt>
+1. Optionally, move the generated <tt>google.html</tt> into <tt>app/views/hquery/search.hquery.html</tt>
+1. Get an App Key from http://developer.yahoo.com/search/boss/
+1. Edit <tt>app/controllers/hquery_controller.rb</tt> and replace the value for +yahoo_boss_appid+
+1. Go to http://localhost:3000/hquery and click on the +Google+ links

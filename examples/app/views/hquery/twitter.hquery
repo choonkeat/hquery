@@ -1,0 +1,26 @@
+select "body" do |ele|
+  ele.attr "style", 'background: #' + (@user/'profile_background_color').inner_text + ' url(' + (@user/'profile_background_image_url').inner_text + ') ' + ((@user/'profile_background_image_url').inner_text == 'true' ? 'repeat' : 'no-repeat') + ' fixed left top'
+  ele.html ".vcard.entry-author .fn", (@user/'name').inner_text
+  ele.html ".vcard.entry-author .adr", (@user/'location').inner_text
+  ele.html ".vcard.entry-author .url", (@user/'url').inner_text
+  ele.html ".vcard.entry-author .url[@href]", (@user/'url').inner_text
+  ele.html ".vcard.entry-author .bio", (@user/'description').inner_text
+  ele.html "#following_count", (@user/'friends_count').inner_text
+  ele.html "#follower_count", (@user/'followers_count').inner_text
+  ele.html "#update_count", (@user/'statuses_count').inner_text
+end
+
+select ".profile-user .thumb" do |ele|
+  ele.html link_to(image_tag((@user/'profile_image_url').inner_text, :id => "profile-image", :style => "height: 73px; width: 73px;"), "http://twitter.com/account/profile_image/#{(@user/'screen_name').inner_text}?hreflang=en")
+end
+
+select ".screen-name" do |ele|
+  ele.html  (@user/'screen_name').inner_text
+end
+
+select ".status", @tweets do |ele, tweet, index|
+  ele.html ".entry-content", (tweet/'text').inner_text
+  ele.html ".entry-meta .entry-date", DateTime.parse((tweet/'created_at:first').inner_text).strftime('%I:%M %p %b %d')
+  ele.html ".entry-meta span a", (tweet/'source').inner_text
+  ele.attr "class", 'hentry mine status ' + (index == 0 ? 'latest-status' : '')
+end
