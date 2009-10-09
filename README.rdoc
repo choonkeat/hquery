@@ -12,9 +12,9 @@ If your controller is "Hello", and your action is "World", then you will need
 
   app/views/hello
               |-- world.hquery
-              |-- world.html
+              |-- world.hquery.html
 
-"world.html" is the vanila HTML file your designers worked on.
+"world.hquery.html" is the vanila HTML file your designers worked on.
 "world.hquery" contains the ruby code to manipulate data.
 
 === Example 1
