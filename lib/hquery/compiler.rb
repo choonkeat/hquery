@@ -74,7 +74,7 @@ module Hquery
 
       html_string = @doc.to_html
       @rhash.keys.each do |tagname|
-        html_string = html_string.gsub("/#{tagname}", '% end %').gsub(tagname, "% #{@rhash[tagname]} %")
+        html_string = html_string.gsub("/#{tagname}", '% end %').gsub("#{tagname} /", "% #{@rhash[tagname]} %").gsub(tagname, "% #{@rhash[tagname]} %")
       end
 
       File.open(compiled_filename, "w") do |f|
