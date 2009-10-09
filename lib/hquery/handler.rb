@@ -7,10 +7,15 @@ module Hquery
       @timestart = Time.now
       @view = view
     end
+    def self.call(view)
+      "#{name}.new(self).render(template, local_assigns)"
+    end
+    def template_filename(template)
+      [template.filename.gsub(/hquery$/i, 'hquery.html'), template.filename.gsub(/hquery$/i, 'html')].find {|s| File.exists?(s)}
+    end
     def render(template, local_assigns = {})
       prep_assigns(local_assigns)
-      template_filename = template.filename.gsub(/hquery$/i, 'html')
-      @doc = Hpricot(IO.read(template_filename))
+      @doc = Hpricot(IO.read(template_filename(template)))
       eval(template.source)
       value = @doc.to_s
     ensure
@@ -21,9 +26,8 @@ module Hquery
        ENV['HQUERY_COMPILE'] || RAILS_ENV == 'production'
     end
     def compile_template(template)
-      template_filename = template.filename.gsub(/hquery$/i, 'html')
       compiled_filename = template.filename.gsub(/hquery$/i, 'html.erb')
-      @doc = Hpricot(IO.read(template_filename))
+      @doc = Hpricot(IO.read(template_filename(template)))
       Compiler.new(@doc).compile(template.source, compiled_filename)
     end
     protected

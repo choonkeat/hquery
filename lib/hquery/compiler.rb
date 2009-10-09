@@ -150,7 +150,7 @@ module Hquery
     class << self
       def compile(railsroot)
         Dir[File.join(railsroot, "app/views/*/*.hquery")].each do |hquery_filename|
-          template_filename = hquery_filename.gsub(/hquery$/i, 'html')
+          template_filename = [hquery_filename.gsub(/hquery$/i, 'hquery.html'), hquery_filename.gsub(/hquery$/i, 'html')].find {|s| File.exists?(s)}
           compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
           if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || ENV['HQUERY_COMPILE']
             puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
