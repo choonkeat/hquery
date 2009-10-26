@@ -4,7 +4,8 @@ module Hquery
   module Element
     def self.included(base)
       base.class_eval do
-        alias_method_chain :html, :selector
+        alias :html_without_selector :html
+        alias :html :html_with_selector
       end
     end
   

@@ -9,5 +9,5 @@ task :hquery => :environment do
       @logger
     end
   end
-  Hquery::Compiler.compile('.')
+  Hquery::Compiler.compile('app/views')
 end

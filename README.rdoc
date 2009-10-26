@@ -95,7 +95,7 @@ Running it too many times won't hurt either
   Skipping app/views/search/google.hquery (app/views/search/google.html.erb is newer)
 
 If Rake is absent, this is the equivalent command line:
-  $ ruby -rconfig/environment vendor/plugins/hquery/lib/hquery/compiler.rb .
+  $ ruby -rconfig/environment vendor/plugins/hquery/lib/hquery/compiler.rb app/views
 
 
 == License

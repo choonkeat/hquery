@@ -1,0 +1,16 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title><%= h("Some code generated this") %></title>
+  </head>
+  <body>
+    <div id="navbar"><%= link_to "home" %> | sitemap</div>
+    <ul id="content"><% ((1..9).to_a ).each do |number| %>
+<li><%= h("Hquery loops #{number+1}") %></li>
+<% end %></ul>
+  <div id="footer">
+  <% 5.times do |n| %>
+    <%= link_to "Contact us", '#' %>
+  <% end %>
+</div></body>
+</html>

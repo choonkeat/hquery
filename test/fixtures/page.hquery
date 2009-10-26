@@ -1,0 +1,18 @@
+# we can rewrite the html before any parsing begins
+(@doc/"#navbar").html IO.read("test/fixtures/navbar.html")
+case self
+when Hquery::Compiler
+  (@doc/"body").append(IO.read("test/fixtures/footer.html.erb"))
+else
+  (@doc/"body").append(render(:partial => "test/fixtures/footer.html.erb"))
+end
+# ENDPRECOMPILED
+
+# now, we modify according to css paths (in compilation, we put code in the right places)
+select "title" do |ele|
+  ele.html h("Some code generated this")
+end
+
+select "#content li", (1..9).to_a do |ele, number|
+  ele.html h("Hquery loops #{number+1}")
+end
