@@ -9,6 +9,7 @@ module Hquery
     def initialize(doc)
       @doc = doc
       @rhash = {}
+      @ahash = {}
     end
 
     def logger
@@ -76,6 +77,9 @@ module Hquery
       @rhash.keys.each do |tagname|
         html_string = html_string.gsub("/#{tagname}", '% end %').gsub("#{tagname} /", "% #{@rhash[tagname]} %").gsub(tagname, "% #{@rhash[tagname]} %")
       end
+      @ahash.each do |(key,value)|
+        html_string = html_string.gsub(key, "<%= #{value} %>")
+      end
 
       File.open(compiled_filename, "w") do |f|
         f.write html_string
@@ -113,6 +117,24 @@ module Hquery
         selected.each do |html|
           # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
+        end
+      when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)\s*((if|unless)\s*(.+))\s*/
+        (attribute, value, condition, clause, bool) = [$1, $2, $3, $4, $5]
+        logger.debug "parsing: '#{selector}'"
+        selected = (@doc/"#{selector}").compact
+        logger.error "compile: #{selector.inspect} does not exist!" unless selected.length > 0
+        selected.each do |html|
+          tagname = unique_placeholder_tagname
+          outputs = []
+          if oldvalue = html.raw_attributes && html.raw_attributes[attribute]
+            outputs << "#{attribute}=#{oldvalue.inspect}"
+          else
+            outputs << ""
+          end
+          outputs << "#{attribute}=#{value}"
+          outputs.reverse! if clause == "if"
+          @ahash["#{attribute}=\"#{tagname}\""] = "((#{bool}) ? (#{outputs.first.inspect}) : (#{outputs.last.inspect}))"
+          html.raw_attr( attribute, tagname)
         end
       when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)/
         (attribute, code) = [$1, $2]

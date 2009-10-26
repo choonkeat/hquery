@@ -16,3 +16,8 @@ end
 select "#content li", (1..9).to_a do |ele, number|
   ele.html h("Hquery loops #{number+1}")
 end
+
+select "#content" do |ele|
+  ele.attr "class", 'optional attribute active' if 1 == 1
+  ele.attr "title", "overriding value inactive" unless 1 == 1
+end

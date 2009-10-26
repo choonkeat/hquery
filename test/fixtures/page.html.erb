@@ -5,7 +5,7 @@
   </head>
   <body>
     <div id="navbar"><%= link_to "home" %> | sitemap</div>
-    <ul id="content"><% ((1..9).to_a ).each do |number| %>
+    <ul <%= ((1 == 1) ? ("class='optional attribute active' ") : ("")) %> <%= ((1 == 1) ? ("title=\"existing title\"") : ("title='overriding value inactive' ")) %> id="content"><% ((1..9).to_a ).each do |number| %>
 <li><%= h("Hquery loops #{number+1}") %></li>
 <% end %></ul>
   <div id="footer">
