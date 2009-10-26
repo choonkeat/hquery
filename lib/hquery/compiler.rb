@@ -152,7 +152,7 @@ module Hquery
         Dir[File.join(basedir, "**/*.hquery")].each do |hquery_filename|
           template_filename = [hquery_filename.gsub(/hquery$/i, 'hquery.html'), hquery_filename.gsub(/hquery$/i, 'html')].find {|s| File.exists?(s)}
           compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
-          if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || ENV['HQUERY_COMPILE']
+          if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || File.mtime(compiled_filename) < File.mtime(template_filename) || ENV['HQUERY_COMPILE']
             puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
             hquery_source = IO.read(hquery_filename)
             doc = Hpricot(IO.read(template_filename))
