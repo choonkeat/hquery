@@ -58,7 +58,7 @@ module Hquery
       interpreted_src.to_s.scan(/^remove.*$/).each do |code|
         logger.debug "interpreting: #{code.inspect}"
         case code
-        when /^remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
+        when /^remove \"([^\"]+)\"\s*(\b(if|unless)\b\s*(.+))\s*/
           (selector, condition, clause, bool) = [$1, $2, $3, $4]
           clause = (clause == 'if' ? 'unless' : 'if')
           tagname = unique_placeholder_tagname
@@ -118,7 +118,7 @@ module Hquery
           # logger.debug "set element #{html.name}=<%= #{code} %>"
           html.html "<%= #{code} %>"
         end
-      when /^\s*#{ele}\.attr \"([^\"]+)\", (.+)\s*((if|unless)\s*(.+))\s*/
+      when /^\s*#{ele}\.attr \"([^\"]+)\", (.+?)\s*(\b(if|unless)\b\s*(.+))\s*/
         (attribute, value, condition, clause, bool) = [$1, $2, $3, $4, $5]
         logger.debug "parsing: '#{selector}'"
         selected = (@doc/"#{selector}").compact
@@ -146,7 +146,7 @@ module Hquery
           html.raw_attr(attribute, "<%= #{code} %>")
         end
 
-      when /^\s*#{ele}\.remove \"([^\"]+)\"\s*((if|unless)\s*(.+))\s*/
+      when /^\s*#{ele}\.remove \"([^\"]+)\"\s*(\b(if|unless)\b\s*(.+))\s*/
         (subselector, condition, clause, bool) = [$1, $2, $3, $4]
         clause = (clause == 'if' ? 'unless' : 'if')
         tagname = unique_placeholder_tagname

@@ -5,9 +5,10 @@
   </head>
   <body>
     <div id="navbar"><%= link_to "home" %> | sitemap</div>
-    <ul <%= ((1 == 1) ? ("class='optional attribute active' ") : ("")) %> <%= ((1 == 1) ? ("title=\"existing title\"") : ("title='overriding value inactive' ")) %> id="content"><% ((1..9).to_a ).each do |number| %>
+    <ul <%= ((1 == 1) ? ("class='optional attribute active'") : ("")) %> <%= ((1 == 1) ? ("title=\"existing title\"") : ("title=\"overriding value inactive\"")) %> id="content"><% ((1..9).to_a ).each do |number| %>
 <li><%= h("Hquery loops #{number+1}") %></li>
 <% end %></ul>
+    <input <%= ((['regexp'].include?('if')) ? ("checked='checked'") : ("")) %> name="mycheckbox" type="checkbox" />
   <div id="footer">
   <% 5.times do |n| %>
     <%= link_to "Contact us", '#' %>
