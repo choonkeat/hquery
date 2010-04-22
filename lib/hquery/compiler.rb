@@ -6,6 +6,8 @@ require 'hpricot'
 #
 module Hquery
   class Compiler
+    HQUERY_START_TAG_REGEXP = /<\w+[^<]*\bHQUERY_START_TAG=\"([^\"]*)\"[^<]*>/
+
     def initialize(doc)
       @doc = doc
       @rhash = {}
@@ -81,6 +83,15 @@ module Hquery
         html_string = html_string.gsub(key, "<%= #{value} %>")
       end
 
+      # For ele.start_tag, replace <tagname HQUERY_START_TAG="xyz"> with <%= xyz %>
+      html_string.gsub!(HQUERY_START_TAG_REGEXP) do |string|
+        if string.match(HQUERY_START_TAG_REGEXP)
+          "<%= #{CGI.unescapeHTML($1)} %>"
+        else
+          string
+        end
+      end
+
       File.open(compiled_filename, "w") do |f|
         f.write html_string
         # asking the generated template to delete itself is 
@@ -91,6 +102,13 @@ module Hquery
 
     def parse(line, selector, ele, list, item)
       case line
+      when /^\s*#{ele}\.start_tag (.+)/
+        code = $1
+        selected = (@doc/"#{selector}").compact
+        logger.error "compile: #{selector.inspect} does not exist!" unless selected.length > 0
+        selected.each do |html|
+          html.set_attribute "HQUERY_START_TAG", code # hquery will CGI.escapeHTML automatically
+        end
       when /^\s*#{ele}\.html \"([^\"]+\[@(\w+)\])\", (.+)/, /^\s*#{ele}\.attr \"([^\"]+)\", \"([^\"]+)\", (.+)/
         (subselector, attribute, code) = [$1, $2, $3]
         logger.debug "parsing: '#{selector} #{subselector}'"
@@ -170,10 +188,11 @@ module Hquery
     end
 
     class << self
+      include Hquery::Common
       def compile(basedir)
         Dir[File.join(basedir, "**/*.hquery")].each do |hquery_filename|
-          template_filename = [hquery_filename.gsub(/hquery$/i, 'hquery.html'), hquery_filename.gsub(/hquery$/i, 'html')].find {|s| File.exists?(s)}
-          compiled_filename = hquery_filename.gsub(/hquery$/i, 'html.erb')
+          template_filename = html_template_filename(hquery_filename)
+          compiled_filename = hquery_filename.gsub(/(\bhtml.|)hquery$/i, 'html.erb')
           if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || File.mtime(compiled_filename) < File.mtime(template_filename) || ENV['HQUERY_COMPILE']
             puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
             hquery_source = IO.read(hquery_filename)

@@ -68,6 +68,14 @@ module Hquery
     ensure
       RAILS_DEFAULT_LOGGER.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
     end
+
+    def start_tag(start_tag_html)
+      tag = Hpricot(start_tag_html)
+      tag.root.attributes.each do |key,value|
+        self.raw_attr key, value
+      end
+      self.inner_html = tag.root.inner_html + self.inner_html
+    end
   end
 end
 

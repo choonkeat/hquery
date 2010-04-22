@@ -3,6 +3,7 @@ require 'cgi'
 
 module Hquery
   class Handler
+    include Hquery::Common
     def initialize(view)
       @timestart = Time.now
       @view = view
@@ -10,12 +11,9 @@ module Hquery
     def self.call(view)
       "#{name}.new(self).render(template, local_assigns)"
     end
-    def template_filename(template)
-      [template.filename.gsub(/hquery$/i, 'hquery.html'), template.filename.gsub(/hquery$/i, 'html')].find {|s| File.exists?(s)}
-    end
     def render(template, local_assigns = {})
       prep_assigns(local_assigns)
-      @doc = Hpricot(IO.read(template_filename(template)))
+      @doc = Hpricot(IO.read(html_template_filename(template.filename)))
       eval(template.source)
       value = @doc.to_s
     ensure
@@ -27,7 +25,7 @@ module Hquery
     end
     def compile_template(template)
       compiled_filename = template.filename.gsub(/hquery$/i, 'html.erb')
-      @doc = Hpricot(IO.read(template_filename(template)))
+      @doc = Hpricot(IO.read(html_template_filename(template.filename)))
       Compiler.new(@doc).compile(template.source, compiled_filename)
     end
     protected
