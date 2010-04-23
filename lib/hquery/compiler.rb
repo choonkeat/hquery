@@ -6,6 +6,10 @@ require 'hpricot'
 #
 module Hquery
   class Compiler
+    # include all helpers into this class
+    Dir[File.join(ActionController::Base.helpers_dir, "*.rb")].each do |filename|
+      include File.basename(filename).split('.').first.classify.constantize rescue $stderr.puts $!
+    end
     HQUERY_START_TAG_REGEXP = /<\w+[^<]*\bHQUERY_START_TAG=\"([^\"]*)\"[^<]*>/
 
     def initialize(doc)
@@ -193,7 +197,12 @@ module Hquery
         Dir[File.join(basedir, "**/*.hquery")].each do |hquery_filename|
           template_filename = html_template_filename(hquery_filename)
           compiled_filename = hquery_filename.gsub(/(\bhtml.|)hquery$/i, 'html.erb')
-          if !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || File.mtime(compiled_filename) < File.mtime(template_filename) || ENV['HQUERY_COMPILE']
+          if ENV['HQUERY_CLEAN']
+            if File.exists?(compiled_filename)
+              puts "Removing #{compiled_filename} ..."
+              File.unlink compiled_filename
+            end
+          elsif !File.exists?(compiled_filename) || File.mtime(compiled_filename) < File.mtime(hquery_filename) || File.mtime(compiled_filename) < File.mtime(template_filename) || ENV['HQUERY_COMPILE']
             puts "Compiling #{hquery_filename} -> #{compiled_filename} ..."
             hquery_source = IO.read(hquery_filename)
             doc = Hpricot(IO.read(template_filename))
