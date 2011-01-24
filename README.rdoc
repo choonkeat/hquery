@@ -1,5 +1,7 @@
 = hquery
 
+(Now supports Rails3! See "Rails3" section below)
+
 Uses pure HTML as "template" for rendering views a Hpricot sequence 
 (in the .hquery counter-part file) is executed to modify the pure HTML
 and the resulting HTML is output to the browser. 
@@ -20,7 +22,7 @@ If your controller is "Hello", and your action is "World", then you will need
 === Example 1
 
 This hquery declaration:
-  select ".users .vcard", User.find(:all) do |ele, user|
+  hquery.select ".users .vcard", User.find(:all) do |ele, user|
     ele.html ".email",       user.email
     ele.html ".tel",         user.telephone_no
     ele.html ".photo[@src]", user.photo
@@ -42,7 +44,7 @@ Can render this html template:
 
 Given an array of Hash results, the following hquery declaration uses Google's results page HTML as-is
 
-  select "li.g[@style='']", @result_list do |ele, result|
+  hquery.select "li.g[@style='']", @result_list do |ele, result|
     # each iterated html element, and its matching iterated data
     ele.html "a.l",         result['title']
     ele.html "a.l[@href]",  h(result['url']) 
@@ -51,7 +53,7 @@ Given an array of Hash results, the following hquery declaration uses Google's r
 === Example 3 Compiling conditionally removed elements
 
 This hquery declaration:
-  remove ".nav.superuser" unless current_user && current_user.superuser?
+  hquery.remove ".nav.superuser" unless current_user && current_user.superuser?
 
 Compiled with this html template:
   <ul class="main_nav">
@@ -97,6 +99,22 @@ Running it too many times won't hurt either
 If Rake is absent, this is the equivalent command line:
   $ ruby -rconfig/environment vendor/plugins/hquery/lib/hquery/compiler.rb app/views
 
+== Rails3
+
+Hquery has been refactored to better support Rails3. As such, the "hquery" instance variable will need to be explicitly
+referenced in the .hquery files, i.e. The old syntax is
+
+  select "h1" do |ele|
+    ele.html "title"
+  end
+
+The new syntax is
+
+  hquery.select "h1" do |ele|
+    ele.html "title"
+  end
+
+This avoids clashes with methods defined by ActionView itself, e.g. "h", "url_for", etc...
 
 == License
 

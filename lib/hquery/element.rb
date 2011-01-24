@@ -62,11 +62,11 @@ module Hquery
       end
     rescue
       err_string = "#{$!.inspect}\n#{$!.backtrace.join("\n")}"
-      RAILS_DEFAULT_LOGGER.error err_string
+      ::Rails.logger.error err_string
       (self/selector).html(RAILS_ENV == 'production' ? "" : CGI.escapeHTML(err_string))
       raise $!
     ensure
-      RAILS_DEFAULT_LOGGER.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
+      ::Rails.logger.debug "hquery::select took #{Time.now - timestart}s for #{selector.inspect}"
     end
 
     def start_tag(start_tag_html)

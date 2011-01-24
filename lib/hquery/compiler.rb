@@ -19,7 +19,7 @@ module Hquery
     end
 
     def logger
-      RAILS_DEFAULT_LOGGER
+      ::Rails.logger
     end
 
     def compile(hquery_source, compiled_filename)
@@ -27,10 +27,10 @@ module Hquery
       # if it exists, we simply eval the code for precompile
       eval(precompile_src) if precompile_src
       # then we move on to interpret each "select ... do end" segment
-      interpreted_src.to_s.scan(/^select .*?^end$/m).each do |code|
+      interpreted_src.to_s.scan(/^hquery\.select .*?^end$/m).each do |code|
         lines = code.split(/[\r\n]+/)
         case lines.pop && lines.shift
-        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*,\s*(\w+)\s*\|/
+        when /^hquery\.select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*,\s*(\w+)\s*\|/
           (selector, list, ele, item, index) = [$1, $2, $4, $5, $6]
           logger.debug "selector #{selector} (#{ele}), list #{list} (#{item}, #{index})"
           if li = (@doc/selector).first
@@ -40,7 +40,7 @@ module Hquery
           else
             logger.error "compile: #{selector.inspect} does not exist!"
           end
-        when /^select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*\|/
+        when /^hquery\.select \"([^\"]+)\", (.+)\s*(do|\{)\s*\|\s*(\w+)\s*,\s*([^\|]+)\s*\|/
           (selector, list, ele, item) = [$1, $2, $4, $5]
           logger.debug "selector #{selector} (#{ele}), list #{list} (#{item})"
           if li = (@doc/selector).first
@@ -50,7 +50,7 @@ module Hquery
           else
             logger.error "compile: #{selector.inspect} does not exist!"
           end
-        when /^select \"([^\"]+)\"\s*(do|\{)\s*\|\s*(\w+)\s*\|/
+        when /^hquery\.select \"([^\"]+)\"\s*(do|\{)\s*\|\s*(\w+)\s*\|/
           (selector, ele) = [$1, $3]
           logger.debug "selector #{selector} (#{ele})"
           lines.each {|line| parse(line, selector, ele, nil, nil) }
@@ -64,13 +64,13 @@ module Hquery
       interpreted_src.to_s.scan(/^remove.*$/).each do |code|
         logger.debug "interpreting: #{code.inspect}"
         case code
-        when /^remove \"([^\"]+)\"\s*(\b(if|unless)\b\s*(.+))\s*/
+        when /^hquery\.remove \"([^\"]+)\"\s*(\b(if|unless)\b\s*(.+))\s*/
           (selector, condition, clause, bool) = [$1, $2, $3, $4]
           clause = (clause == 'if' ? 'unless' : 'if')
           tagname = unique_placeholder_tagname
           (@doc/selector).wrap("<#{tagname}></#{tagname}>")
           @rhash[tagname] = "#{clause} #{bool}"
-        when /^remove \"([^\"]+)\"\s*/
+        when /^hquery\.remove \"([^\"]+)\"\s*/
           selector = $1
           logger.debug "removing #{selector} unconditionally"
           (@doc/selector).remove
